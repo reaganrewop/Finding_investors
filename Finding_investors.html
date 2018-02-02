@@ -11781,14 +11781,16 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">urllib.request</span><span class="o">,</span><span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">bson</span> <span class="k">import</span> <span class="n">json_util</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">itertools</span>
 <span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="k">import</span> <span class="n">MongoClient</span>
 <span class="o">%</span><span class="k">matplotlib</span> inline
 </pre></div>
 
@@ -11808,13 +11810,59 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">with</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="s2">&quot;https://gist.githubusercontent.com/murtuzakz/4bd887712703ff14c9b0f7c18229b332/raw/d0dd1c59016e2488dcbe0c8e710a1c5df9c3672e/season7.json&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">url</span><span class="p">:</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
-<span class="nb">print</span> <span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Episode 1&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">data_new</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+<span class="c1">#print (json.dumps((data[&quot;Episode 1&quot;])[0], sort_keys=False, indent=2))</span>
     
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1">#client = MongoClient(&quot;mongodb://root:toor@ds217898.mlab.com:17898/mydb&quot;)</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">MongoClient</span><span class="p">()</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">client</span><span class="p">[</span><span class="s1">&#39;mydb&#39;</span><span class="p">]</span>
+<span class="n">collection</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="s1">&#39;season7&#39;</span><span class="p">]</span>
+<span class="n">serverStatusResult</span><span class="o">=</span><span class="n">db</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;serverStatus&quot;</span><span class="p">)</span>
+<span class="c1">#display(serverStatusResult)</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div>
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>The above code connects to the local mongo client &amp; Checks whether it is a new document &amp; if, it is a new documents (ie. updated) It removes the previous file &amp; stores the new file in db.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[5]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">query</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">find</span><span class="p">({},{</span><span class="s2">&quot;_id&quot;</span><span class="p">:</span><span class="mi">0</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">temp</span> <span class="ow">in</span> <span class="n">query</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">temp</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="o">!=</span><span class="n">data_new</span><span class="p">):</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">drop</span><span class="p">({})</span>
+    <span class="n">db</span><span class="o">.</span><span class="n">collection</span><span class="o">.</span><span class="n">insert_one</span><span class="p">(</span><span class="n">data_new</span><span class="p">)</span>
+    <span class="n">data</span><span class="o">=</span><span class="n">data_new</span>
 </pre></div>
 
 </div>
@@ -11833,7 +11881,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">temp</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -11856,7 +11904,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">list1</span> <span class="o">=</span> <span class="p">[[</span> <span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">])[</span><span class="n">x</span><span class="p">])[</span><span class="s1">&#39;kitna&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span> <span class="p">]</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">temp</span><span class="p">]</span>
@@ -11876,6 +11924,420 @@ div#notebook {
 </div>
 </div>
 
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Invester 1</th>
+      <th>Kitna for Investor 1</th>
+      <th>Company title for Investor 1</th>
+      <th>Invester 2</th>
+      <th>Kitna for Investor 2</th>
+      <th>company title for Investor 2</th>
+      <th>Invester 3</th>
+      <th>Kitna for Investor 3</th>
+      <th>company title for Investor 3</th>
+      <th>Invester 4</th>
+      <th>Kitna for Investor 4</th>
+      <th>company title for Investor 4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Episode 1</th>
+      <td>Lori Greiner and Ashton Kutcher</td>
+      <td>$200K for 30%</td>
+      <td>The Beebo</td>
+      <td></td>
+      <td></td>
+      <td>McClary Brothers Drinking Vinegars</td>
+      <td>Robert Herjavec and Lori Greiner</td>
+      <td>$200K for 25</td>
+      <td>Signal Vault</td>
+      <td></td>
+      <td></td>
+      <td>Acton Rocket Skates</td>
+    </tr>
+    <tr>
+      <th>Episode 2</th>
+      <td></td>
+      <td></td>
+      <td>Splikity</td>
+      <td>Robert Herjavec and Lori Greiner</td>
+      <td>$50K for 20%</td>
+      <td>O Dang Hummus</td>
+      <td>\nMark Cuban and Barbara Corcoran\n</td>
+      <td>$600K for 25%</td>
+      <td>Loliware</td>
+      <td></td>
+      <td></td>
+      <td>Mikki Bey Eyelash Extensions</td>
+    </tr>
+    <tr>
+      <th>Episode 3</th>
+      <td></td>
+      <td></td>
+      <td>Valpark Mobile</td>
+      <td>\nMark Cuban and Troy Carter\n</td>
+      <td>\n$250K for 20%\n</td>
+      <td>Foot Cardigan</td>
+      <td>\nDaymond John and Troy Carter\n</td>
+      <td>\n$150K for 17.5% with 10% Royalty\n</td>
+      <td>Two Guys Bowtie</td>
+      <td></td>
+      <td></td>
+      <td>Nerdwax</td>
+    </tr>
+    <tr>
+      <th>Episode 4</th>
+      <td></td>
+      <td></td>
+      <td>EZ Pee Z</td>
+      <td>Mark Cuban</td>
+      <td>$300K for 25%</td>
+      <td>Dude Wipes</td>
+      <td></td>
+      <td></td>
+      <td>Milk and Brookies</td>
+      <td>Lori Greiner</td>
+      <td>$250K for 19%</td>
+      <td>Table 87 Pizza</td>
+    </tr>
+    <tr>
+      <th>Episode 5</th>
+      <td>Daymond John</td>
+      <td>$100K for 15%</td>
+      <td>Three Jerks Jerky</td>
+      <td>Daymond John, Robert Herjavec, Lori Greiner, M...</td>
+      <td>$1.5Mfor25%</td>
+      <td>X-Craft</td>
+      <td></td>
+      <td></td>
+      <td>Switch Witch</td>
+      <td></td>
+      <td></td>
+      <td>Skinny Mirror</td>
+    </tr>
+    <tr>
+      <th>Episode 6</th>
+      <td></td>
+      <td></td>
+      <td>HotShot</td>
+      <td>Lori Greiner</td>
+      <td>$200K for 5%</td>
+      <td>Windcatcher</td>
+      <td>Mark Cuban and Chris Sacca</td>
+      <td>$200Kfor 10%</td>
+      <td>Rent Like A Champion</td>
+      <td>Lori Greiner</td>
+      <td>$200Kfor 20%</td>
+      <td>Stem Center</td>
+    </tr>
+    <tr>
+      <th>Episode 7</th>
+      <td>Lori Greiner</td>
+      <td>$125K for 18%</td>
+      <td>Simply Fit Board</td>
+      <td></td>
+      <td></td>
+      <td>The Clean Cube</td>
+      <td>Barbara Corcoran</td>
+      <td>$200K for 40%</td>
+      <td>Saavy Natural</td>
+      <td></td>
+      <td></td>
+      <td>Wink Frozen Desserts</td>
+    </tr>
+    <tr>
+      <th>Episode 8</th>
+      <td>Robert Herjavec and Mark Cuban</td>
+      <td>$1M for 20%</td>
+      <td>Polar Pro</td>
+      <td></td>
+      <td></td>
+      <td>AFreSHeet</td>
+      <td>Lori Greiner</td>
+      <td>$85K for 35%</td>
+      <td>Grip Clean</td>
+      <td>Mark Cuban</td>
+      <td>$150K for 15%</td>
+      <td>UnShrinkIt</td>
+    </tr>
+    <tr>
+      <th>Episode 9</th>
+      <td>Lori Greiner and Mark Cuban</td>
+      <td>$150K for 20%</td>
+      <td>Umano</td>
+      <td>Lori Greiner</td>
+      <td>$299K for 16.5%</td>
+      <td>Brazi Bites</td>
+      <td></td>
+      <td></td>
+      <td>Bubble Soccer</td>
+      <td>Daymond John</td>
+      <td>$50K for 30%</td>
+      <td>SockTabs</td>
+    </tr>
+    <tr>
+      <th>Episode 10</th>
+      <td></td>
+      <td></td>
+      <td>Leaux Racing Trikes</td>
+      <td>Robert Herjavec</td>
+      <td>$425K for 25%</td>
+      <td>Glow Recipe</td>
+      <td>Lori Greiner, Robert Herjavec, and Kevin O’Leary</td>
+      <td>$250K for 30%</td>
+      <td>Sarah Oliver Handbags</td>
+      <td>Lori Greiner and Mark Cuban</td>
+      <td>$1.4M for 5%</td>
+      <td>Trunkster</td>
+    </tr>
+    <tr>
+      <th>Episode 11</th>
+      <td>Kevin O’Leary</td>
+      <td>$300K for 15%</td>
+      <td>Lovepop</td>
+      <td>Kevin O’Leary</td>
+      <td>$225K for 50%</td>
+      <td>GeekMyTree</td>
+      <td></td>
+      <td></td>
+      <td>BeardHead</td>
+      <td>Barbara Corcoran</td>
+      <td>$50K for 25%</td>
+      <td>PiperWai</td>
+    </tr>
+    <tr>
+      <th>Episode 12</th>
+      <td>Mark Cuban and Kevin O’ Leary</td>
+      <td>$150K for 20%</td>
+      <td>Extreme Sandbox</td>
+      <td>Lori Greiner</td>
+      <td>$300K for 10%</td>
+      <td>Fire Avert</td>
+      <td>Daymond John</td>
+      <td>$120K for 42%</td>
+      <td>ABS Protein Pancakes</td>
+      <td></td>
+      <td></td>
+      <td>Total Tie Keep</td>
+    </tr>
+    <tr>
+      <th>Episode 13</th>
+      <td>Robert Herjavec</td>
+      <td>$100K for 10%</td>
+      <td>Hungry Harvest</td>
+      <td>Lori Greiner</td>
+      <td>$60K for 50%</td>
+      <td>Controlled Chaos</td>
+      <td></td>
+      <td></td>
+      <td>Spretz Me!</td>
+      <td></td>
+      <td></td>
+      <td>Espz</td>
+    </tr>
+    <tr>
+      <th>Episode 14</th>
+      <td>Mark Cuban</td>
+      <td>$700K for 7%</td>
+      <td>Fixed</td>
+      <td>Chris Sacca</td>
+      <td>$250K for 2.5%</td>
+      <td>Hatch Baby</td>
+      <td>Lori Greiner</td>
+      <td>$100K for 45%</td>
+      <td>Beard King</td>
+      <td></td>
+      <td></td>
+      <td>Village Scholarships</td>
+    </tr>
+    <tr>
+      <th>Episode 15</th>
+      <td></td>
+      <td></td>
+      <td>CO.Alition</td>
+      <td>Daymond John</td>
+      <td>$250K for 33%</td>
+      <td>SheFit</td>
+      <td></td>
+      <td></td>
+      <td>IcyBreeze</td>
+      <td>Mark Cuban</td>
+      <td>$250K for 20%</td>
+      <td>2400 Expert</td>
+    </tr>
+    <tr>
+      <th>Episode 16</th>
+      <td>Mark Cuban</td>
+      <td>$100K for 20%</td>
+      <td>R Riveter</td>
+      <td></td>
+      <td></td>
+      <td>BearTek</td>
+      <td>Daymond John, Mark Cuban, Lori Greiner</td>
+      <td>$300K for 30%</td>
+      <td>Combat Flip Flops</td>
+      <td></td>
+      <td></td>
+      <td>Major Mom</td>
+    </tr>
+    <tr>
+      <th>Episode 17</th>
+      <td></td>
+      <td></td>
+      <td>Float Baby</td>
+      <td></td>
+      <td></td>
+      <td>Mtailor</td>
+      <td>Barbara Corcoran, Mark Cuban, and Chris Sacca</td>
+      <td>$210K for 30%</td>
+      <td>Bee Free Honee</td>
+      <td></td>
+      <td></td>
+      <td>SmartPlate</td>
+    </tr>
+    <tr>
+      <th>Episode 18</th>
+      <td>Mark Cuban</td>
+      <td>$100K for 25%</td>
+      <td>Nohbo</td>
+      <td></td>
+      <td></td>
+      <td>TutuBlue</td>
+      <td></td>
+      <td></td>
+      <td>Clean Sleep</td>
+      <td>Mark Cuban</td>
+      <td>$1.5M for 10%</td>
+      <td>Swork It</td>
+    </tr>
+    <tr>
+      <th>Episode 19</th>
+      <td>Mark Cuban, Lori Greiner</td>
+      <td>$300K for 30%</td>
+      <td>Insta Fire</td>
+      <td></td>
+      <td></td>
+      <td>Custard Stand</td>
+      <td>Robert Herjavec</td>
+      <td>$200K for 15%</td>
+      <td>Rags to Raches</td>
+      <td>Kevin O’ Leary</td>
+      <td>$80K for 20%</td>
+      <td>PRX Performance</td>
+    </tr>
+    <tr>
+      <th>Episode 20</th>
+      <td>Barbara Corcoran</td>
+      <td>$100K for 30%</td>
+      <td>Glace Cyrotherapy</td>
+      <td></td>
+      <td></td>
+      <td>Linka</td>
+      <td></td>
+      <td></td>
+      <td>Teaspressa</td>
+      <td>Lori Greiner</td>
+      <td>$750K for 8%</td>
+      <td>Better Back</td>
+    </tr>
+    <tr>
+      <th>Episode 21</th>
+      <td>Kevin O’ Leary</td>
+      <td>$100K for 25%</td>
+      <td>Illumi Bowl</td>
+      <td></td>
+      <td></td>
+      <td>Beloved Shirts</td>
+      <td></td>
+      <td></td>
+      <td>Mobcraft Beer</td>
+      <td>Daymond John</td>
+      <td>$250K for 12.5%</td>
+      <td>Innovation Pet</td>
+    </tr>
+    <tr>
+      <th>Episode 22</th>
+      <td>Mark Cuban</td>
+      <td>$100K for 25%</td>
+      <td>Beer Blizzard</td>
+      <td></td>
+      <td></td>
+      <td>Good Promise</td>
+      <td>Lori Greiner and Kevin O’ Leary</td>
+      <td>$2M for 3%</td>
+      <td>Vengo</td>
+      <td>Lori Greiner</td>
+      <td>$500K for 3%</td>
+      <td>Wondercide</td>
+    </tr>
+    <tr>
+      <th>Episode 23</th>
+      <td></td>
+      <td></td>
+      <td>NoPhone</td>
+      <td>Lori Greiner and Robert Herjavec</td>
+      <td>$300K for 20%</td>
+      <td>PrideBites</td>
+      <td>Robert Herjavec</td>
+      <td>$166K for 33%</td>
+      <td>Trobo</td>
+      <td>Lori Greiner</td>
+      <td>$500K for 15%</td>
+      <td>Coolbox</td>
+    </tr>
+    <tr>
+      <th>Episode 24</th>
+      <td></td>
+      <td></td>
+      <td>Picjoy</td>
+      <td></td>
+      <td></td>
+      <td>Frends</td>
+      <td></td>
+      <td></td>
+      <td>Slyde</td>
+      <td></td>
+      <td></td>
+      <td>Petnostics</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
 </div>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div>
@@ -11888,7 +12350,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">record</span> <span class="o">=</span> <span class="p">{}</span>
@@ -11903,7 +12365,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">24</span><span class="p">),</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">)):</span>
@@ -11931,7 +12393,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[10]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">adddict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
@@ -11963,7 +12425,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[11]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">adddict2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
@@ -11988,7 +12450,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[12]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">adddict3</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -12016,7 +12478,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[13]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">del</span> <span class="n">al</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
@@ -12040,7 +12502,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[14]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">al_s</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">al</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -12062,7 +12524,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[15]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">record_f</span> <span class="o">=</span> <span class="p">[]</span>
@@ -12075,7 +12537,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[16]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">al_s</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">al_s</span><span class="p">]</span>
@@ -12088,7 +12550,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[17]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">al_s</span><span class="p">[</span><span class="n">y</span><span class="p">]]</span><span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">al_s</span><span class="p">))]:</span>
@@ -12117,7 +12579,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[18]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">cln</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Investor&#39;</span><span class="p">,</span><span class="s1">&#39;No of Investment&#39;</span><span class="p">]</span>
@@ -12132,7 +12594,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[19]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">final</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">al_s</span><span class="p">,</span><span class="n">columns</span><span class="o">=</span><span class="n">cln</span><span class="p">)</span>
@@ -12146,13 +12608,389 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[20]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">display</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
 </pre></div>
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+<div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Investor</th>
+      <th>0</th>
+      <th>1</th>
+      <th>2</th>
+      <th>3</th>
+      <th>4</th>
+      <th>5</th>
+      <th>6</th>
+      <th>7</th>
+      <th>8</th>
+      <th>...</th>
+      <th>13</th>
+      <th>14</th>
+      <th>15</th>
+      <th>16</th>
+      <th>17</th>
+      <th>18</th>
+      <th>19</th>
+      <th>20</th>
+      <th>21</th>
+      <th>22</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Lori Greiner</td>
+      <td>The Beebo</td>
+      <td>Signal Vault</td>
+      <td>O Dang Hummus</td>
+      <td>Table 87 Pizza</td>
+      <td>X-Craft</td>
+      <td>Windcatcher</td>
+      <td>Stem Center</td>
+      <td>Simply Fit Board</td>
+      <td>Grip Clean</td>
+      <td>...</td>
+      <td>Fire Avert</td>
+      <td>Controlled Chaos</td>
+      <td>Beard King</td>
+      <td>Combat Flip Flops</td>
+      <td>Insta Fire</td>
+      <td>Better Back</td>
+      <td>Vengo</td>
+      <td>Wondercide</td>
+      <td>PrideBites</td>
+      <td>Coolbox</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Mark Cuban</td>
+      <td>Loliware</td>
+      <td>Foot Cardigan</td>
+      <td>Dude Wipes</td>
+      <td>X-Craft</td>
+      <td>Rent Like A Champion</td>
+      <td>Polar Pro</td>
+      <td>UnShrinkIt</td>
+      <td>Umano</td>
+      <td>Trunkster</td>
+      <td>...</td>
+      <td>Combat Flip Flops</td>
+      <td>Bee Free Honee</td>
+      <td>Nohbo</td>
+      <td>Swork It</td>
+      <td>Insta Fire</td>
+      <td>Beer Blizzard</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Daymond John</td>
+      <td>Two Guys Bowtie</td>
+      <td>Three Jerks Jerky</td>
+      <td>X-Craft</td>
+      <td>SockTabs</td>
+      <td>ABS Protein Pancakes</td>
+      <td>SheFit</td>
+      <td>Combat Flip Flops</td>
+      <td>Innovation Pet</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Robert Herjavec</td>
+      <td>Signal Vault</td>
+      <td>O Dang Hummus</td>
+      <td>X-Craft</td>
+      <td>Polar Pro</td>
+      <td>Glow Recipe</td>
+      <td>Sarah Oliver Handbags</td>
+      <td>Hungry Harvest</td>
+      <td>Rags to Raches</td>
+      <td>PrideBites</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Barbara Corcoran</td>
+      <td>Loliware</td>
+      <td>X-Craft</td>
+      <td>Saavy Natural</td>
+      <td>PiperWai</td>
+      <td>Bee Free Honee</td>
+      <td>Glace Cyrotherapy</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Kevin O’ Leary</td>
+      <td>Extreme Sandbox</td>
+      <td>PRX Performance</td>
+      <td>Illumi Bowl</td>
+      <td>Vengo</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Chris Sacca</td>
+      <td>Rent Like A Champion</td>
+      <td>Hatch Baby</td>
+      <td>Bee Free Honee</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Mark Cuban</td>
+      <td>X-Craft</td>
+      <td>Polar Pro</td>
+      <td>Umano</td>
+      <td>Trunkster</td>
+      <td>Combat Flip Flops</td>
+      <td>Bee Free Honee</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>Lori Greiner</td>
+      <td>Signal Vault</td>
+      <td>O Dang Hummus</td>
+      <td>X-Craft</td>
+      <td>Combat Flip Flops</td>
+      <td>Insta Fire</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Troy Carter</td>
+      <td>Foot Cardigan</td>
+      <td>Two Guys Bowtie</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Robert Herjavec</td>
+      <td>X-Craft</td>
+      <td>Sarah Oliver Handbags</td>
+      <td>PrideBites</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Ashton Kutcher</td>
+      <td>The Beebo</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Barbara Corcoran</td>
+      <td>Loliware</td>
+      <td>X-Craft</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+<p>13 rows × 24 columns</p>
+</div>
+</div>
+
+</div>
+
 </div>
 </div>
 
@@ -12168,7 +13006,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[&nbsp;]:</div>
+<div class="prompt input_prompt">In&nbsp;[21]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">final</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;out.csv&#39;</span><span class="p">)</span>
